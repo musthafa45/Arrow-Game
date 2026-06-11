@@ -41,7 +41,7 @@ public class UILineRenderer : Graphic{
         if (GetComponent<CanvasRenderer>() == null)
             gameObject.AddComponent<CanvasRenderer>();
 
-        raycastTarget = true; // ← enables click detection on the mesh
+        raycastTarget = false; // ← enables click detection on the mesh
         _originalColor = color;
     }
 
@@ -53,7 +53,7 @@ public class UILineRenderer : Graphic{
         towarsGridPoints = GetTowardsGridPoints();
 
         foreach (var gp in towarsGridPoints) {
-            Debug.Log( $"Point {gp.LocalPosition} Occupied:{gp.IsOccupied()}");
+            Debug.Log( $"Point {gp.LocalPosition} Occupied:{gp.IsOccupied() && gp.OccupiedSnake != this}");
             gp.Blink();
 
         }
@@ -74,15 +74,6 @@ public class UILineRenderer : Graphic{
         }
     }
 
-    private Vector2 GetGridDirection() {
-        Vector2 dir = (Points[0] - Points[1]).normalized;
-
-        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-            return new Vector2(Mathf.Sign(dir.x), 0);
-        else
-            return new Vector2(0, Mathf.Sign(dir.y));
-    }
-
     private List<GridPoint> GetTowardsGridPoints() {
         List<GridPoint> result = new();
 
@@ -91,9 +82,12 @@ public class UILineRenderer : Graphic{
         if (_headGridPoint == null)
             return result;
 
-        Vector2 dir = GetGridDirection();
+        Vector2 dir = (Points[0] - Points[1]).normalized;
 
         Vector2 headPos = _headGridPoint.LocalPosition;
+
+        _debugDir = dir;
+        _debugHeadPos = headPos;
 
         foreach (var kvp in GridGenerator.Instance.PointMap) {
             Vector2 pos = kvp.Key;

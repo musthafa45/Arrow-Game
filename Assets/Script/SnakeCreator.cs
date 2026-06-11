@@ -116,7 +116,6 @@ public class SnakeCreator : MonoBehaviour {
 
         UILineRenderer line = go.AddComponent<UILineRenderer>();
         line.lineWidth = lineWidth;
-        line.raycastTarget = true;
 
         // ── Convert grid local points → world → snake local ──────────
         List<Vector2> converted = new();
