@@ -133,10 +133,16 @@ public class SnakeCreator : MonoBehaviour {
         _snakes.Add(line);
 
         // ── Register snake on each GridPoint ──────────────────────────
+        List<GridPoint> owned = new();
+
         for (int i = 0; i < path.Count; i++) {
-            if (gridGenerator.PointMap.TryGetValue(path[i], out GridPoint gp))
+            if (gridGenerator.PointMap.TryGetValue(path[i], out GridPoint gp)) {
                 gp.SetOccupied(line, i);
+                owned.Add(gp);
+            }
         }
+
+        line.SetOccupiedGridPoints(owned);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────

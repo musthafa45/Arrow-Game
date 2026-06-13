@@ -20,7 +20,20 @@ public class GridPoint : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
     public void SetOccupied(UILineRenderer snake, int index) {
         OccupiedSnake = snake;
         SnakePointIndex = index;
-        _image.color = new Color(1f, 1f, 0f, 0.25f); // yellow tint = occupied
+
+        if(OccupiedSnake != null) {
+            _image.color = new Color(1f, 1f, 0f, 0.25f); // yellow tint = occupied
+        }
+        else {
+            _image.color = new Color(1f, 1f, 1f, 0.15f);
+        }
+
+    }
+
+    public void ClearIfOwnedBy(UILineRenderer snake) {
+        if (OccupiedSnake != snake) return;
+
+        SetFree();
     }
 
     public void SetFree() {

@@ -29,12 +29,14 @@ public class UILineRenderer : Graphic{
     private Vector2 _debugHeadPos;
     private Vector2 _debugDir;
 
-    //[Header("Movement")]
-    //[SerializeField] public float moveSpeed = 400f; // pixels per second
-    //[SerializeField] public float moveDistance = 500f; // how far to move off screen
+    [Header("Movement")]
+    private readonly float moveSpeed = 5000f; // pixels per second
+    private readonly float maxMoveDistance = 3000f; // how far to move off screen
 
     private List<GridPoint> towarsGridPoints;
+    private List<GridPoint> ownedGridPoints = new();
 
+    private List<Vector2> originalPoints;
     protected override void Awake() {
         base.Awake();
         // Graphic requires a CanvasRenderer — Unity adds it but just in case:
@@ -52,10 +54,112 @@ public class UILineRenderer : Graphic{
 
         towarsGridPoints = GetTowardsGridPoints();
 
+        bool canGoOutOffScreen = true;
+
+        List<GridPoint> collideBeforeGridPoints = new();
+
         foreach (var gp in towarsGridPoints) {
             Debug.Log( $"Point {gp.LocalPosition} Occupied:{gp.IsOccupied() && gp.OccupiedSnake != this}");
             gp.Blink();
+            
+            if(gp.IsOccupied() && gp.OccupiedSnake != this) {
+                canGoOutOffScreen = false;
+                break;
+            }
 
+            collideBeforeGridPoints.Add(gp);
+        }
+
+        Debug.Log($"Can go off screen: {canGoOutOffScreen}");
+
+
+        if(canGoOutOffScreen) {
+            StartCoroutine(MoveOffScreenCoroutine());
+
+            // ── Un Register snake on each GridPoint ──────────────────────────
+            foreach (var gp in ownedGridPoints)
+                gp.ClearIfOwnedBy(this);
+        }
+        else {
+            // ── Snake Can't Go Off Screen But Still Has to Move Towards grid points Until it Can hit Front Snake And has to Come back old Pos ──────────────────────────
+            originalPoints = new List<Vector2>(Points);
+            StartCoroutine(MoveCollideBeforeGridPointsCoroutine(collideBeforeGridPoints));
+        }
+    }
+
+    private IEnumerator MoveCollideBeforeGridPointsCoroutine(List<GridPoint> path) {
+        if (path.Count == 0)
+            yield break;
+
+        Vector2 dir = (Points[0] - Points[1]).normalized;
+
+        Vector2 startHeadPos = Points[0];
+
+        // Move forward
+        foreach (var gp in path) {
+            Vector2 target = gp.LocalPosition;
+
+            while (Vector2.Distance(Points[0], target) > 5f) {
+                List<Vector2> oldPositions = new List<Vector2>(Points);
+
+                Points[0] = Vector2.MoveTowards(
+                    Points[0],
+                    target,
+                    moveSpeed * Time.deltaTime);
+
+                for (int i = 1; i < Points.Count; i++)
+                    Points[i] = oldPositions[i - 1];
+
+                SetVerticesDirty();
+
+                yield return null;
+            }
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        // Reverse back
+        while (Vector2.Distance(Points[0], startHeadPos) > 5f) {
+            for (int i = 0; i < Points.Count; i++) {
+                Points[i] = Vector2.MoveTowards(
+                    Points[i],
+                    originalPoints[i],
+                    moveSpeed * Time.deltaTime);
+            }
+
+            SetVerticesDirty();
+
+            yield return null;
+        }
+
+        Points = new List<Vector2>(originalPoints);
+        SetVerticesDirty();
+    }
+
+    private IEnumerator MoveOffScreenCoroutine() {
+        Vector2 dir = (Points[0] - Points[1]).normalized;
+
+        Vector2 startPos = Points[0];
+
+        while (true) {
+            float travelled = Vector2.Distance(startPos, Points[0]);
+
+            if (travelled >= maxMoveDistance) {
+                gameObject.SetActive(false);
+                yield break;
+            }
+
+            List<Vector2> oldPositions = new List<Vector2>(Points);
+
+            Points[0] += moveSpeed * Time.deltaTime * dir;
+
+            for (int i = 1; i < Points.Count; i++) {
+                Points[i] = oldPositions[i - 1];
+            }
+
+            SetVerticesDirty();
+
+            yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -280,6 +384,10 @@ public class UILineRenderer : Graphic{
     public void SetPoints(List<Vector2> pts) {
         Points = new List<Vector2>(pts);
         SetVerticesDirty();
+    }
+
+    public void SetOccupiedGridPoints(List<GridPoint> points) {
+        ownedGridPoints = points;
     }
 
     public void SetColor(Color c) {
