@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class GridPoint : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler {
+
+    public Vector2Int GridCoordinate;
     public Vector2 LocalPosition;
     public UILineRenderer OccupiedSnake;   // which snake owns this point
     public int SnakePointIndex;   // index in that snake's path

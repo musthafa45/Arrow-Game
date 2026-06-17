@@ -768,6 +768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b5ff36d6eae94f47a96252bace7ffb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnakeCreator
+  snakeLevelData: {fileID: 11400000, guid: e350978424130d74686c0c93e1ca56fb, type: 2}
   gridGenerator: {fileID: 1631895651}
   snakeContainer: {fileID: 1749652739}
   snakeCount: 20

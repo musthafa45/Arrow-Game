@@ -2,6 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class SnakeCreator : MonoBehaviour {
+
+    [Header("Level Data")]
+    [SerializeField] private SnakeLevelData snakeLevelData;
+
     [Header("References")]
     [SerializeField] private GridGenerator gridGenerator;
     [SerializeField] private RectTransform snakeContainer; // parent UI panel
@@ -17,7 +21,29 @@ public class SnakeCreator : MonoBehaviour {
     private HashSet<Vector2> _occupied = new();
     private List<UILineRenderer> _snakes = new();
 
-    void Start() => Generate();
+    void Start() {
+        if (snakeLevelData != null)
+            LoadLevel();
+        else
+            Generate();
+    }
+
+    private void LoadLevel() {
+        if (snakeLevelData == null)
+            return;
+
+        foreach (var snake in snakeLevelData.snakes) {
+            List<Vector2> path = new();
+
+            foreach (var cell in snake.cells) {
+                if (gridGenerator.CellMap.TryGetValue(cell, out GridPoint gp)) {
+                    path.Add(gp.LocalPosition);
+                }
+            }
+
+            SpawnSnake(path, snake.color);
+        }
+    }
 
     [ContextMenu("Generate Snakes")]
     public void Generate() {
@@ -44,7 +70,7 @@ public class SnakeCreator : MonoBehaviour {
         for (int i = 0; i < snakeCount; i++) {
             List<Vector2> path = TryBuildSnake();
             if (path != null && path.Count >= minLength)
-                SpawnSnake(path);
+                SpawnSnake(path, RandomColor());
         }
 
         Debug.Log($"[SnakeCreator] Spawned {_snakes.Count}/{snakeCount} snakes.");
@@ -100,7 +126,7 @@ public class SnakeCreator : MonoBehaviour {
 
     // ── Spawn ─────────────────────────────────────────────────────────
 
-    private void SpawnSnake(List<Vector2> path) {
+    private void SpawnSnake(List<Vector2> path, Color color) {
 
         if (path == null || path.Count < 2) return;
         if (Vector2.Distance(path[0], path[1]) < 0.001f) return;
@@ -129,7 +155,7 @@ public class SnakeCreator : MonoBehaviour {
         }
 
         line.SetPoints(converted);
-        line.SetColor(RandomColor());
+        line.SetColor(color);
         _snakes.Add(line);
 
         // ── Register snake on each GridPoint ──────────────────────────
@@ -177,23 +203,6 @@ public class SnakeCreator : MonoBehaviour {
         return free.Count > 0
             ? free[Random.Range(0, free.Count)]
             : Vector2.negativeInfinity;
-    }
-
-    private Vector2[] ShuffledDirsDiagnol(float step) {
-        Vector2[] dirs =
-        {
-            new( step,     0), new(-step,    0),
-            new(    0,  step), new(    0, -step),
-            new( step,  step), new(-step,  step),
-            new( step, -step), new(-step, -step),
-        };
-
-        for (int i = dirs.Length - 1; i > 0; i--) {
-            int j = Random.Range(0, i + 1);
-            (dirs[i], dirs[j]) = (dirs[j], dirs[i]);
-        }
-
-        return dirs;
     }
 
     private Vector2[] ShuffledDirs(float step) {

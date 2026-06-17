@@ -32,6 +32,7 @@ public class GridGenerator : MonoBehaviour {
 
     // Fast lookup: local position → GridPoint
     public Dictionary<Vector2, GridPoint> PointMap { get; private set; } = new();
+    public Dictionary<Vector2Int, GridPoint> CellMap = new();
 
     void Awake() {
         Instance = this;
@@ -52,6 +53,7 @@ public class GridGenerator : MonoBehaviour {
         foreach (var kv in PointMap)
             if (kv.Value != null) Destroy(kv.Value.gameObject);
         PointMap.Clear();
+        CellMap.Clear();
 
         _shape = CreateShape(shapeType);
 
@@ -84,7 +86,7 @@ public class GridGenerator : MonoBehaviour {
 
                 // ── Spawn clickable UI point ──────────────────────────
                 if (spawnClickPoints)
-                    SpawnGridPoint(point);
+                    SpawnGridPoint(point, new Vector2Int(x, y));
             }
         }
 
@@ -96,26 +98,27 @@ public class GridGenerator : MonoBehaviour {
                   $"Exterior: {ShapeExterior.Count}");
     }
 
-    private void SpawnGridPoint(Vector2 localPos) {
-        GameObject go = new GameObject($"GP_{localPos.x:F0}_{localPos.y:F0}");
+    private void SpawnGridPoint(Vector2 localPos, Vector2Int coord) {
+        GameObject go = new GameObject($"GP_{coord.x}_{coord.y}");
+
         go.transform.SetParent(gridParent, false);
 
         RectTransform rt = go.AddComponent<RectTransform>();
+
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
+
         rt.anchoredPosition = localPos;
         rt.sizeDelta = new Vector2(pointClickSize, pointClickSize);
 
         GridPoint gp = go.AddComponent<GridPoint>();
-        gp.LocalPosition = localPos;
 
-        // Round hitbox using AspectRatioFitter
-        var fitter = go.AddComponent<UnityEngine.UI.AspectRatioFitter>();
-        fitter.aspectMode = UnityEngine.UI.AspectRatioFitter.AspectMode.HeightControlsWidth;
-        fitter.aspectRatio = 1f;
+        gp.LocalPosition = localPos;
+        gp.GridCoordinate = coord;
 
         PointMap[localPos] = gp;
+        CellMap[coord] = gp;
     }
 
     // ── Shape Factory ─────────────────────────────────────────────────

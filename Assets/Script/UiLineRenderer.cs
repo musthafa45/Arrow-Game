@@ -33,7 +33,7 @@ public class UILineRenderer : Graphic{
     private Vector2 _debugDir;
 
     [Header("Movement")]
-    private readonly float moveSpeed = 5000f; // pixels per second
+    private readonly float moveSpeed = 7000f;
     private readonly float maxMoveDistance = 3000f; // how far to move off screen
 
     private List<GridPoint> towarsGridPoints;
