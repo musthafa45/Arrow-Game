@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,6 +30,11 @@ public class LevelEditManager : MonoBehaviour {
             OnSnakeSelected?.Invoke(currentSelectedSnake);
             return;
         }
+        else {
+            currentSelectedSnake = null;
+        }
+
+
            
 
         currentSnakeGridPoints.Add(point);
@@ -83,5 +89,32 @@ public class LevelEditManager : MonoBehaviour {
             p.ResetColor();
 
         currentSnakeGridPoints.Clear();
+    }
+
+    public void DeleteSelectedSnake() {
+        if(currentSelectedSnake == null) {
+            Debug.LogWarning("No snake selected to delete!");
+            return;
+        }
+           
+        SnakeCreator.Instance.DeleteSnakeFromEditor(currentSelectedSnake);
+    }
+
+    public void SwapHeadSnake() {
+        if (currentSelectedSnake == null) {
+            Debug.LogWarning("No snake selected to swap!");
+            return;
+        }
+
+        List<GridPoint> points = new(currentSelectedSnake.OccupiedGridPoints);
+        Color snakeColor = currentSelectedSnake.color;
+        points.Reverse();
+
+        SnakeCreator.Instance.DeleteSnakeFromEditor(currentSelectedSnake);
+        SnakeCreator.Instance.CreateSnakeFromEditor(points, snakeColor);
+
+        currentSnakeGridPoints.Clear();
+
+        currentSelectedSnake = SnakeCreator.Instance.SpawnedSnakes[^1];
     }
 }

@@ -252,13 +252,14 @@ public class SnakeCreator : MonoBehaviour {
 
     private Color RandomColor() => Palette[Random.Range(0, Palette.Length)];
 
-    public void CreateSnakeFromEditor(List<GridPoint> points) {
+    public void CreateSnakeFromEditor(List<GridPoint> points, Color? snakeColor = null) {
         List<Vector2> path = new();
-
-        foreach (var p in points)
-            path.Add(p.LocalPosition);
-
-        SpawnSnake(path, RandomColor());
+        foreach (var p in points) path.Add(p.LocalPosition);
+        SpawnSnake(path, snakeColor ?? RandomColor());
     }
 
+    public void DeleteSnakeFromEditor(UILineRenderer currentSelectedSnake) {
+        _snakes.Remove(currentSelectedSnake);
+        Destroy(currentSelectedSnake.gameObject);
+    }
 }

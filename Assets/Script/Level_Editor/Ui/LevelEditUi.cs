@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class LevelEditUi : MonoBehaviour {
-    [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn;
-    [SerializeField] private GameObject levelEditPanel;
+    [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn,deleteSnakeBtn, swapHeadBtn;
+    [SerializeField] private GameObject levelEditPanel,levelEditPanel2;
     [SerializeField] private TMP_Dropdown colorDropDown;
     [SerializeField] private Image colorPreviewImage;
 
@@ -27,24 +27,43 @@ public class LevelEditUi : MonoBehaviour {
 
                     finishSnakeBtn.interactable = false;
                     cancelSnakeBtn.interactable = false;
-                    saveLevelBtn.interactable = SnakeCreator.Instance.SpawnedSnakes.Count > 0; // Only enable save if we have at least 1 snake, otherwise disable it
+                    saveLevelBtn.interactable = SnakeCreator.Instance.SpawnedSnakes.Count > 0; 
+                    deleteSnakeBtn.interactable = false; 
                 });
 
                 saveLevelBtn.onClick.AddListener(() => LevelEditManager.Instance.SaveLevel());
 
-                finishSnakeBtn.interactable = false; // Initially disable finish button until we have at least 2 points
-                cancelSnakeBtn.interactable = false; // Initially disable cancel button until we have at least 2 points
-                saveLevelBtn.interactable = false; // Initially disable save button until we have at least 1 snake
+                deleteSnakeBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.DeleteSelectedSnake();
+                    
+                    saveLevelBtn.interactable = SnakeCreator.Instance.SpawnedSnakes.Count > 0;
+                    deleteSnakeBtn.interactable = false;
+                    swapHeadBtn.interactable = false;
+                });
+
+                swapHeadBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.SwapHeadSnake();
+                });
+
+                finishSnakeBtn.interactable = false; 
+                cancelSnakeBtn.interactable = false;
+                saveLevelBtn.interactable = false; 
+                deleteSnakeBtn.interactable = false; 
+                swapHeadBtn.interactable = false;
 
                 LevelEditManager.Instance.OnSnakeCreationStarted += (hasValidPointsForSnakes) => { 
 
-                    finishSnakeBtn.interactable = hasValidPointsForSnakes; // Only allow finishing if we have at least 2 points to create a snake
-                    cancelSnakeBtn.interactable = true; // Allow canceling as soon as we start creating a snake, even if we don't have 2 points yet, since the user might want to cancel before reaching 2 points
-                    saveLevelBtn.interactable = false; // Save button should only be enabled when we have at least 1 snake, not during snake creation
+                    finishSnakeBtn.interactable = hasValidPointsForSnakes;
+                    cancelSnakeBtn.interactable = true;
+                    saveLevelBtn.interactable = false; 
+                    deleteSnakeBtn.interactable = false; 
                 };
 
                 LevelEditManager.Instance.OnSnakeSelected += (snake) =>
                 {
+                    deleteSnakeBtn.interactable = true;
+                    swapHeadBtn.interactable = true;
+
                     int index = (int)snake.SnakeColor;
                     colorPreviewImage.color = GetColor(snake.SnakeColor);
 
@@ -57,13 +76,21 @@ public class LevelEditUi : MonoBehaviour {
 
                     colorDropDown.onValueChanged.AddListener((index) =>
                     {
-                        snake.SetColor((SnakeColor)index);
-                        colorPreviewImage.color = GetColor(snake.SnakeColor);
+                        if(snake != null) {
+                            snake.SetColor((SnakeColor)index);
+                            colorPreviewImage.color = GetColor(snake.SnakeColor);
+                        }
+                        else {
+                            Debug.LogWarning("No snake selected to change color.");
+                            colorPreviewImage.color = Color.white;
+                        }
+                        
                     });
                 };
             }
            else {
                 levelEditPanel.SetActive(false);
+                levelEditPanel2.SetActive(false);
            }
         }
 
