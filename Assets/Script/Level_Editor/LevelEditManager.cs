@@ -6,7 +6,9 @@ public class LevelEditManager : MonoBehaviour {
     public static LevelEditManager Instance { get; private set; }
 
     public bool IsInEditMode = true;
+
     public bool CanOverlapSnake = false;
+    public bool CanGoDiagonal = false;
 
     private List<GridPoint> currentSnakeGridPoints = new();
 
@@ -68,12 +70,33 @@ public class LevelEditManager : MonoBehaviour {
             Debug.LogWarning("Cannot create snake on top of another snake!");
             return;
         }
-            
+
+        if (IsSnakeGoingDiagonal(currentSnakeGridPoints) && !CanGoDiagonal) {
+
+            currentSnakeGridPoints.Reverse();
+            SnakeCreator.Instance.CreatePreviewSnakeFromEditor(currentSnakeGridPoints);
+            currentSnakeGridPoints.Clear();
+
+            Debug.LogWarning("Cannot create diagonal snake!");
+            return;
+        }
+
         currentSnakeGridPoints.Reverse();
         SnakeCreator.Instance.CreateSnakeFromEditor(currentSnakeGridPoints);
         currentSnakeGridPoints.Clear();
     }
 
+    private bool IsSnakeGoingDiagonal(List<GridPoint> currentSnakeGridPoints) {
+        for (int i = 1; i < currentSnakeGridPoints.Count; i++) {
+            GridPoint previous = currentSnakeGridPoints[i - 1];
+            GridPoint current = currentSnakeGridPoints[i];
+
+            if (Math.Abs(current.GridCoordinate.x - previous.GridCoordinate.x) == 1 && Math.Abs(current.GridCoordinate.y - previous.GridCoordinate.y) == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private bool IsSnakeCollidingWithSnake(List<GridPoint> currentSnakeGridPoints) {
         for (int i = 0; i < currentSnakeGridPoints.Count; i++) {

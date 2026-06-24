@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class LevelEditUi : MonoBehaviour {
     [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn,deleteSnakeBtn, swapHeadBtn;
-    [SerializeField] private Toggle canOverlapSnake;
+    [SerializeField] private Toggle canOverlapSnake,canGoDiagonal;
     [SerializeField] private GameObject levelEditPanel,levelEditPanel2;
     [SerializeField] private TMP_Dropdown colorDropDown;
     [SerializeField] private Image colorPreviewImage;
@@ -50,6 +50,12 @@ public class LevelEditUi : MonoBehaviour {
 
                 canOverlapSnake.onValueChanged.AddListener((value) => {
                     LevelEditManager.Instance.CanOverlapSnake = value;
+                });
+
+                canGoDiagonal.isOn = LevelEditManager.Instance.CanGoDiagonal;
+
+                canGoDiagonal.onValueChanged.AddListener((value) => {
+                    LevelEditManager.Instance.CanGoDiagonal = value;
                 });
 
                 finishSnakeBtn.interactable = false; 
