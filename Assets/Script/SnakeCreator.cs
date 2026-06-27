@@ -145,4 +145,11 @@ public class SnakeCreator : MonoBehaviour {
         }
         
     }
+
+    public void DeleteAllSnakes() {
+        foreach (var snake in _snakes) {
+            Destroy(snake.gameObject);
+        }
+        _snakes.Clear();
+    }
 }

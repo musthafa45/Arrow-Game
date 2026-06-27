@@ -167,4 +167,58 @@ public class LevelEditManager : MonoBehaviour {
         currentSelectedSnake = SnakeCreator.Instance.SpawnedSnakes[^1];
     }
 
+    public void NudgeLayout(int dx, int dy) {
+        var snapshot = new List<(List<GridPoint> points, Color color)>();
+
+        foreach (var snake in SnakeCreator.Instance.SpawnedSnakes) {
+            List<GridPoint> newPoints = new();
+
+            foreach (var gp in snake.OccupiedGridPoints) {
+                Vector2Int newCoord = gp.GridCoordinate + new Vector2Int(dx, dy);
+
+                if (!GridGenerator.Instance.CellMap.TryGetValue(newCoord, out GridPoint newGP)) {
+                    Debug.LogWarning($"Nudge out of bounds at {newCoord}");
+                    return;
+                }
+
+                newPoints.Add(newGP);
+            }
+
+            snapshot.Add((newPoints, snake.color));
+        }
+
+        // Delete all first
+        foreach (var snake in new List<SnakeRenderer>(SnakeCreator.Instance.SpawnedSnakes)) {
+            foreach (var gp in snake.OccupiedGridPoints) {
+                gp.SetFree();
+            }
+            SnakeCreator.Instance.DeleteSnakeFromEditor(snake);
+        }
+            
+
+        // Recreate at new positions
+        foreach (var (points, color) in snapshot)
+            SnakeCreator.Instance.CreateSnakeFromEditor(points, color);
+    }
+
+    [ContextMenu("Nudge Left")]
+    public void LeftMove() {
+        NudgeLayout(-1, 0);
+    }
+
+    [ContextMenu("Nudge Right")]    
+    public void RightMove() {
+        NudgeLayout(1, 0);
+    }
+
+    [ContextMenu("Nudge Up")]
+    public void UpMove() {
+        NudgeLayout(0, 1);
+    }
+
+    [ContextMenu("Nudge Down")]
+    public void DownMove() {
+        NudgeLayout(0, -1);
+    }
+
 }
