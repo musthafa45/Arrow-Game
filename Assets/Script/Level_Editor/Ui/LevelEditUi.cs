@@ -4,8 +4,9 @@ using UnityEngine.UI;
 
 public class LevelEditUi : MonoBehaviour {
     [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn,deleteSnakeBtn, swapHeadBtn;
+    [SerializeField] private Button nudgeLeftBtn, nudgeRightBtn, nudgeUpBtn, nudgeDownBtn;
     [SerializeField] private Toggle canOverlapSnake,canGoDiagonal;
-    [SerializeField] private GameObject levelEditPanel,levelEditPanel2;
+    [SerializeField] private GameObject levelEditPanel,levelEditPanel2, levelEditPanel3;
     [SerializeField] private TMP_Dropdown colorDropDown;
     [SerializeField] private Image colorPreviewImage;
 
@@ -13,6 +14,8 @@ public class LevelEditUi : MonoBehaviour {
         if (GameManager.Instance != null) {
            if(GameManager.Instance.CurrentGameMode == GameMode.LevelEditorMode) {
                 levelEditPanel.SetActive(true);
+                levelEditPanel2.SetActive(true);
+                levelEditPanel3.SetActive(true);
 
                 finishSnakeBtn.onClick.AddListener(() =>
                 {
@@ -64,6 +67,11 @@ public class LevelEditUi : MonoBehaviour {
                 deleteSnakeBtn.interactable = false; 
                 swapHeadBtn.interactable = false;
 
+                nudgeLeftBtn.interactable = false;
+                nudgeRightBtn.interactable = false;
+                nudgeUpBtn.interactable = false;
+                nudgeDownBtn.interactable = false;
+
                 LevelEditManager.Instance.OnSnakeCreationStarted += (hasValidPointsForSnakes) => { 
 
                     finishSnakeBtn.interactable = hasValidPointsForSnakes;
@@ -100,10 +108,40 @@ public class LevelEditUi : MonoBehaviour {
                         
                     });
                 };
+
+                LevelEditManager.Instance.OnNudgeLayoutPerformed += () => {
+                    saveLevelBtn.interactable = true;
+                };
+
+                nudgeLeftBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.NudgeLayout(Vector2Int.left);
+                });
+
+                nudgeRightBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.NudgeLayout(Vector2Int.right);
+                });
+
+                nudgeUpBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.NudgeLayout(Vector2Int.up);
+                });
+
+                nudgeDownBtn.onClick.AddListener(() => {
+                    LevelEditManager.Instance.NudgeLayout(Vector2Int.down);
+                });
+
+                GameManager.Instance.OnLevelLoadedWithCustomLevel += (hasCustomLevel) => {
+                    nudgeLeftBtn.interactable = hasCustomLevel;
+                    nudgeRightBtn.interactable = hasCustomLevel;
+                    nudgeUpBtn.interactable = hasCustomLevel;
+                    nudgeDownBtn.interactable = hasCustomLevel;
+                };
+
+
             }
            else {
                 levelEditPanel.SetActive(false);
                 levelEditPanel2.SetActive(false);
+                levelEditPanel3.SetActive(false);
            }
         }
 

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum GameMode {
@@ -8,6 +9,8 @@ public enum GameMode {
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+
+    public event Action<bool> OnLevelLoadedWithCustomLevel;
 
     [SerializeField] private GameMode currentGameMode = GameMode.PlayMode;
 
@@ -36,9 +39,12 @@ public class GameManager : MonoBehaviour
 
             if (snakeLevelData != null) {
                 SnakeCreator.Instance.LoadLevel(snakeLevelData);
+                // Notify subscribers that the level has been loaded
+                OnLevelLoadedWithCustomLevel?.Invoke(true);
             }
             else {
                 Debug.Log("Starting Level Editor Mode without a predefined level. You can create a new level.");
+                OnLevelLoadedWithCustomLevel?.Invoke(false);
             }
         }
     }

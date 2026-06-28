@@ -7,6 +7,7 @@ public class LevelEditManager : MonoBehaviour {
 
     public event Action<bool> OnSnakeCreationStarted; // for UI to know when to show finish/cancel buttons, bool indicates if we have at least 2 points to create a snake
     public event Action<SnakeRenderer> OnSnakeSelected; // for UI to know when to show delete button
+    public event Action OnNudgeLayoutPerformed; // for UI to know when to update the level data
 
     [HideInInspector] public bool CanOverlapSnake = false;
     [HideInInspector] public bool CanGoDiagonal = false;
@@ -167,14 +168,15 @@ public class LevelEditManager : MonoBehaviour {
         currentSelectedSnake = SnakeCreator.Instance.SpawnedSnakes[^1];
     }
 
-    public void NudgeLayout(int dx, int dy) {
-        var snapshot = new List<(List<GridPoint> points, Color color)>();
+    public void NudgeLayout(Vector2Int offset) {
+        var snapshot = new List<(SnakeRenderer snake, List<GridPoint> newPoints)>();
 
+        // Pass 1: validate + collect new points
         foreach (var snake in SnakeCreator.Instance.SpawnedSnakes) {
             List<GridPoint> newPoints = new();
 
             foreach (var gp in snake.OccupiedGridPoints) {
-                Vector2Int newCoord = gp.GridCoordinate + new Vector2Int(dx, dy);
+                Vector2Int newCoord = gp.GridCoordinate + offset;
 
                 if (!GridGenerator.Instance.CellMap.TryGetValue(newCoord, out GridPoint newGP)) {
                     Debug.LogWarning($"Nudge out of bounds at {newCoord}");
@@ -184,41 +186,24 @@ public class LevelEditManager : MonoBehaviour {
                 newPoints.Add(newGP);
             }
 
-            snapshot.Add((newPoints, snake.color));
+            snapshot.Add((snake, newPoints));
         }
 
-        // Delete all first
-        foreach (var snake in new List<SnakeRenderer>(SnakeCreator.Instance.SpawnedSnakes)) {
-            foreach (var gp in snake.OccupiedGridPoints) {
-                gp.SetFree();
-            }
-            SnakeCreator.Instance.DeleteSnakeFromEditor(snake);
+        // Pass 2: clear all old occupation first
+        foreach (var (snake, _) in snapshot)
+            foreach (var gp in snake.OccupiedGridPoints)
+                gp.ClearIfOwnedBy(snake);
+
+        // Pass 3: apply all new positions
+        foreach (var (snake, newPoints) in snapshot) {
+            snake.OccupiedGridPoints = newPoints;
+            snake.SetPoints(newPoints.ConvertAll(gp => gp.LocalPosition));
+
+            foreach (var gp in newPoints)
+                gp.OccupiedSnake = snake;
         }
-            
 
-        // Recreate at new positions
-        foreach (var (points, color) in snapshot)
-            SnakeCreator.Instance.CreateSnakeFromEditor(points, color);
-    }
-
-    [ContextMenu("Nudge Left")]
-    public void LeftMove() {
-        NudgeLayout(-1, 0);
-    }
-
-    [ContextMenu("Nudge Right")]    
-    public void RightMove() {
-        NudgeLayout(1, 0);
-    }
-
-    [ContextMenu("Nudge Up")]
-    public void UpMove() {
-        NudgeLayout(0, 1);
-    }
-
-    [ContextMenu("Nudge Down")]
-    public void DownMove() {
-        NudgeLayout(0, -1);
+        OnNudgeLayoutPerformed?.Invoke();
     }
 
 }
