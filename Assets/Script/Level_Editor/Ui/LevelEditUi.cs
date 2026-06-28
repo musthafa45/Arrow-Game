@@ -5,6 +5,8 @@ using UnityEngine.UI;
 public class LevelEditUi : MonoBehaviour {
     [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn,deleteSnakeBtn, swapHeadBtn;
     [SerializeField] private Button nudgeLeftBtn, nudgeRightBtn, nudgeUpBtn, nudgeDownBtn;
+    [SerializeField] private Button helpBtn,helpUiExitBtn;
+    [SerializeField] private GameObject helpUiParent;
     [SerializeField] private Toggle canOverlapSnake,canGoDiagonal;
     [SerializeField] private GameObject levelEditPanel,levelEditPanel2, levelEditPanel3;
     [SerializeField] private TMP_Dropdown colorDropDown;
@@ -129,6 +131,22 @@ public class LevelEditUi : MonoBehaviour {
                     LevelEditManager.Instance.NudgeLayout(Vector2Int.down);
                 });
 
+                helpBtn.onClick.AddListener(() => {
+                    helpUiParent.SetActive(true);
+
+                    levelEditPanel.SetActive(false);
+                    levelEditPanel2.SetActive(false);
+                    levelEditPanel3.SetActive(false);
+                });
+
+                helpUiExitBtn.onClick.AddListener(() => {
+                    helpUiParent.SetActive(false);
+
+                    levelEditPanel.SetActive(true);
+                    levelEditPanel2.SetActive(true);
+                    levelEditPanel3.SetActive(true);
+                });
+
                 GameManager.Instance.OnLevelLoadedWithCustomLevel += (hasCustomLevel) => {
                     nudgeLeftBtn.interactable = hasCustomLevel;
                     nudgeRightBtn.interactable = hasCustomLevel;
@@ -143,6 +161,8 @@ public class LevelEditUi : MonoBehaviour {
                 levelEditPanel2.SetActive(false);
                 levelEditPanel3.SetActive(false);
            }
+
+           helpUiParent.SetActive(false);
         }
 
        
