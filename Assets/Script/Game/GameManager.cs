@@ -1,52 +1,37 @@
-using System;
 using UnityEngine;
 
-public enum GameMode {
-    PlayMode,
-    LevelEditorMode
-}
+namespace Game {
+    public class GameManager : MonoBehaviour {
 
-public class GameManager : MonoBehaviour
-{
-    public static GameManager Instance { get; private set; }
+        public static GameManager Instance { get; private set; }
 
-    public event Action<bool> OnLevelLoadedWithCustomLevel;
+        [Header("Level Data")]
+        [SerializeField] private SnakeLevelData snakeLevelData;
 
-    [SerializeField] private GameMode currentGameMode = GameMode.PlayMode;
+        private void Awake() {
+            Instance = this;
+        }
 
-    [Header("Level Data")]
-    [SerializeField] private SnakeLevelData snakeLevelData;
 
-    public GameMode CurrentGameMode => currentGameMode;
-
-    private void Awake() {
-        Instance = this;
-    }
-
-    private void Start() {
-        if (currentGameMode == GameMode.PlayMode) {
-            // Initialize the game in Play Mode
+        private void Start() {
             if (snakeLevelData != null) {
                 SnakeCreator.Instance.LoadLevel(snakeLevelData);
+                Timer.Instance.StartCounter();
             }
             else {
                 Debug.LogError("SnakeLevelData is not assigned in the GameManager.");
             }
-           
-        }
-        else if (currentGameMode == GameMode.LevelEditorMode) {
-            // Initialize the game in Level Editor Mode
 
-            if (snakeLevelData != null) {
-                SnakeCreator.Instance.LoadLevel(snakeLevelData);
-                // Notify subscribers that the level has been loaded
-                OnLevelLoadedWithCustomLevel?.Invoke(true);
-            }
-            else {
-                Debug.Log("Starting Level Editor Mode without a predefined level. You can create a new level.");
-                OnLevelLoadedWithCustomLevel?.Invoke(false);
-            }
+            SnakeCreator.Instance.OnAllSnakesRemoved += SnakeCreator_Instance_OnAllSnakesRemoved;
+        }
+
+        private void SnakeCreator_Instance_OnAllSnakesRemoved() {
+            Timer.Instance.StopCounter();
+        }
+
+        private void OnDestroy() {
+            SnakeCreator.Instance.OnAllSnakesRemoved -= SnakeCreator_Instance_OnAllSnakesRemoved;
         }
     }
-
 }
+

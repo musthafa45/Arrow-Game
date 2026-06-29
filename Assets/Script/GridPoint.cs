@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using LevelEditor;
 
 public class GridPoint : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler {
 
@@ -50,11 +51,14 @@ public class GridPoint : MonoBehaviour, IPointerClickHandler, IPointerEnterHandl
 
     public void OnPointerClick(PointerEventData eventData) {
 
-        if(GameManager.Instance.CurrentGameMode == GameMode.LevelEditorMode) {
-            Debug.Log($"[GridPoint] Clicked point at {LocalPosition} in edit mode.");
-            LevelEditManager.Instance.HandleGridPointClick(this);
-            return;
+        if (GameManager.Instance != null) {
+            if (GameManager.Instance.CurrentGameMode == GameMode.LevelEditorMode) {
+                Debug.Log($"[GridPoint] Clicked point at {LocalPosition} in edit mode.");
+                LevelEditManager.Instance.HandleGridPointClick(this);
+                return;
+            }
         }
+        
 
         if (OccupiedSnake != null) {
             Debug.Log($"[GridPoint] Clicked occupied point → Snake: {OccupiedSnake.name} " +

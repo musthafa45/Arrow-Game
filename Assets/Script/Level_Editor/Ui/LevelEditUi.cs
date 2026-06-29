@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using LevelEditor;
 
 public class LevelEditUi : MonoBehaviour {
     [SerializeField] private Button finishSnakeBtn, cancelSnakeBtn, saveLevelBtn,deleteSnakeBtn, swapHeadBtn;
@@ -11,6 +12,7 @@ public class LevelEditUi : MonoBehaviour {
     [SerializeField] private GameObject levelEditPanel,levelEditPanel2, levelEditPanel3;
     [SerializeField] private TMP_Dropdown colorDropDown;
     [SerializeField] private Image colorPreviewImage;
+    [SerializeField] private GameObject countDownText;
 
     private void Start() {
         if (GameManager.Instance != null) {
@@ -18,6 +20,7 @@ public class LevelEditUi : MonoBehaviour {
                 levelEditPanel.SetActive(true);
                 levelEditPanel2.SetActive(true);
                 levelEditPanel3.SetActive(true);
+                countDownText.SetActive(false);
 
                 finishSnakeBtn.onClick.AddListener(() =>
                 {
@@ -165,6 +168,7 @@ public class LevelEditUi : MonoBehaviour {
                 levelEditPanel.SetActive(false);
                 levelEditPanel2.SetActive(false);
                 levelEditPanel3.SetActive(false);
+                countDownText.SetActive(true);
 
                 SnakeCreator.Instance.OnAllSnakesRemoved += () => {
                     Debug.Log("Show Win Panel");
