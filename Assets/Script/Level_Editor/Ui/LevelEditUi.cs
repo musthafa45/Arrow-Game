@@ -102,6 +102,8 @@ public class LevelEditUi : MonoBehaviour {
                         if(snake != null) {
                             snake.SetColor((SnakeColor)index);
                             colorPreviewImage.color = GetColor(snake.SnakeColor);
+
+                            saveLevelBtn.interactable = true;
                         }
                         else {
                             Debug.LogWarning("No snake selected to change color.");
@@ -112,6 +114,10 @@ public class LevelEditUi : MonoBehaviour {
                 };
 
                 LevelEditManager.Instance.OnNudgeLayoutPerformed += () => {
+                    saveLevelBtn.interactable = true;
+                };
+
+                LevelEditManager.Instance.OnHeadSwapPerformed += () => {
                     saveLevelBtn.interactable = true;
                 };
 

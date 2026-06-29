@@ -5,9 +5,10 @@ using UnityEngine;
 public class LevelEditManager : MonoBehaviour {
     public static LevelEditManager Instance { get; private set; }
 
-    public event Action<bool> OnSnakeCreationStarted; // for UI to know when to show finish/cancel buttons, bool indicates if we have at least 2 points to create a snake
-    public event Action<SnakeRenderer> OnSnakeSelected; // for UI to know when to show delete button
-    public event Action OnNudgeLayoutPerformed; // for UI to know when to update the level data
+    public event Action<bool> OnSnakeCreationStarted;
+    public event Action<SnakeRenderer> OnSnakeSelected; 
+    public event Action OnNudgeLayoutPerformed; 
+    public event Action OnHeadSwapPerformed; 
 
     [HideInInspector] public bool CanOverlapSnake = false;
     [HideInInspector] public bool CanGoDiagonal = false;
@@ -166,6 +167,8 @@ public class LevelEditManager : MonoBehaviour {
         currentSnakeGridPoints.Clear();
 
         currentSelectedSnake = SnakeCreator.Instance.SpawnedSnakes[^1];
+
+        OnHeadSwapPerformed?.Invoke();
     }
 
     public void NudgeLayout(Vector2Int offset) {
